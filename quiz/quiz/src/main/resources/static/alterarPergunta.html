@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Alterar Pergunta</title>
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center">Alterar Pergunta</h1>
+    <p class="lead text-center">Preencha os dados abaixo para alterar a pergunta.</p>
+
+    <form id="formPergunta">
+        <div class="mb-3">
+            <label for="pergunta" class="form-label">Pergunta</label>
+            <input type="text" class="form-control" id="pergunta" name="pergunta" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Opções</label>
+            <input type="text" class="form-control" id="opcaoA" name="opcaoA" placeholder="Opção A" required>
+            <input type="text" class="form-control mt-2" id="opcaoB" name="opcaoB" placeholder="Opção B" required>
+            <input type="text" class="form-control mt-2" id="opcaoC" name="opcaoC" placeholder="Opção C" required>
+            <input type="text" class="form-control mt-2" id="opcaoD" name="opcaoD" placeholder="Opção D" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Selecione a alternativa correta</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="resposta" id="respostaA" value="A" required>
+                <label class="form-check-label" for="respostaA">Opção A</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="resposta" id="respostaB" value="B" required>
+                <label class="form-check-label" for="respostaB">Opção B</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="resposta" id="respostaC" value="C" required>
+                <label class="form-check-label" for="respostaC">Opção C</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="resposta" id="respostaD" value="D" required>
+                <label class="form-check-label" for="respostaD">Opção D</label>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="perguntas.html" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Função para pegar o ID da pergunta da URL
+    function getPerguntaId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // Função para carregar os dados da pergunta
+    function carregarPergunta() {
+        const perguntaId = getPerguntaId();
+
+        fetch(`http://localhost:8080/perguntas/${perguntaId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Preenche os campos do formulário com os dados da pergunta
+                document.getElementById('pergunta').value = data.pergunta;
+                document.getElementById('opcaoA').value = data.opcaoA;
+                document.getElementById('opcaoB').value = data.opcaoB;
+                document.getElementById('opcaoC').value = data.opcaoC;
+                document.getElementById('opcaoD').value = data.opcaoD;
+
+                // Marca a opção correta
+                document.getElementById(`resposta${data.resposta}`).checked = true;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar a pergunta:', error);
+                alert('Ocorreu um erro ao carregar a pergunta.');
+            });
+    }
+
+    // Chama a função de carregar a pergunta assim que a página for carregada
+    window.onload = carregarPergunta;
+
+    // Função para enviar as alterações ao backend
+    document.getElementById('formPergunta').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const perguntaId = getPerguntaId();
+        const pergunta = document.getElementById('pergunta').value;
+        const opcaoA = document.getElementById('opcaoA').value;
+        const opcaoB = document.getElementById('opcaoB').value;
+        const opcaoC = document.getElementById('opcaoC').value;
+        const opcaoD = document.getElementById('opcaoD').value;
+        const resposta = document.querySelector('input[name="resposta"]:checked').value;
+
+        const perguntaAlterada = {
+            pergunta: pergunta,
+            opcaoA: opcaoA,
+            opcaoB: opcaoB,
+            opcaoC: opcaoC,
+            opcaoD: opcaoD,
+            resposta: resposta
+        };
+
+        fetch(`http://localhost:8080/perguntas/${perguntaId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(perguntaAlterada)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('Pergunta alterada com sucesso!');
+                window.location.href = 'perguntas.html';  // Redireciona para a lista de perguntas
+            })
+            .catch(error => {
+                console.error('Erro ao alterar pergunta:', error);
+                alert('Ocorreu um erro ao alterar a pergunta.');
+            });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
